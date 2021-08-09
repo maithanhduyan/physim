@@ -1,0 +1,28 @@
+{
+  "name": "physim",
+  "version": "1.0.0",
+  "description": "PHYSIC SIMULATOR",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maithanhduyan/physim.git"
+  },
+  "keywords": [
+    "physic",
+    "simulator",
+    "javascript"
+  ],
+  "author": "Mai Thành Duy An",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/maithanhduyan/physim/issues"
+  },
+  "homepage": "https://github.com/maithanhduyan/physim#readme",
+  "dependencies": {
+    "brain.js": "^2.0.0-beta.2",
+    "js-sha256": "^0.9.0"
+  }
+}
