@@ -3,94 +3,104 @@
  * WELCOME TO PHYSIM !
  *
  * */
-
+"use strict";
 console.log("WELCOME TO PHYSIM !");
-var width = 300,
-  height = 300;
-
-const hour_hand_length = 0.45; // ratio to radius of clock
-const minute_hand_length = 0.7; // ratio to radius of clock
-const sec_hand_length = 0.9; // ratio to radius of clock
+var width = 500,
+  height = 500;
 
 var body = document.querySelector("body");
 
 var container = document.createElement("div");
-container.setAttribute("style","width:999px; margin:0 auto;");
 
 body.appendChild(container);
 
 var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-svg.setAttribute("viewBox", "-1 -1 2 2");
+//svg.setAttribute("viewBox", "1 1 2 2");
+svg.setAttribute("id", "scene");
 container.appendChild(svg);
 
 svg.setAttribute("width", width);
 svg.setAttribute("height", height);
 
-const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-circle.setAttribute("cx", 0);
-circle.setAttribute("cy", 0);
-circle.setAttribute("r",.97);
-circle.setAttribute("style", "fill:none; stroke:black; stroke-width:2%");
+var button = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+button.setAttribute("onclick", "circle_click(evt)");
+button.setAttribute("cx", 150);
+button.setAttribute("cy", 50);
+button.setAttribute("r", 10);
+button.setAttribute("fill", "red");
+button.setAttribute("stroke", "black");
+button.setAttribute("stroke-width", 3);
+svg.appendChild(button);
+
+var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+line.setAttribute("id", "string");
+line.setAttribute("x1", 150);
+line.setAttribute("y1", 50);
+line.setAttribute("x2", 250);
+line.setAttribute("y2", 50);
+line.setAttribute("stroke", "brown");
+line.setAttribute("stroke-width", 4);
+
+svg.appendChild(line);
+
+var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+circle.setAttribute("id", "ball");
+circle.setAttribute("cx", 250);
+circle.setAttribute("cy", 50);
+circle.setAttribute("r", 20);
+circle.setAttribute("fill", "black");
+// circle.setAttribute("onclick", "circle_click(evt)");
 
 svg.appendChild(circle);
 
-// draw second marks
-for (let ii = 0;ii < 60; ii++) {
-  const jj = 2 * Math.PI / 60 *ii;
-  const sec_pos = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  sec_pos.setAttribute("cx", (Math.cos(jj)*.9) .toString ());
-  sec_pos.setAttribute("cy", (Math.sin(jj)*.9) .toString ());
-  sec_pos.setAttribute("r", "0.8%");
-  sec_pos.setAttribute("style", "fill:grey;stroke:none;");
-  svg.appendChild(sec_pos);
-};
+var in_angle = 0;
+var cx = 150,
+  cy = 50;
+var radius = 100; // cm
+var g = 9.81; // m/s^2
+var angle = 0; // radians
+var vel = 0; // m/s
+var dx = 0.002; // s
+var acc, vel, penx, peny;
+var timerFunction = null;
 
-// draw hour marks
-for (let ii = 0;ii < 12; ii++) {
-  const jj = 2 * Math.PI / 12 *ii;
-  const hour_pos = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  hour_pos.setAttribute("cx", (Math.cos(jj)*.9) .toString ());
-  hour_pos.setAttribute("cy", (Math.sin(jj)*.9) .toString ());
-  hour_pos.setAttribute("r", "3%");
-  hour_pos.setAttribute("style", "fill:black;stroke:none;");
-  svg.appendChild(hour_pos);
-};
+var stopflag = 0;
 
-// hour hand
-const hour_hand = document.createElementNS("http://www.w3.org/2000/svg", "line");
-hour_hand.setAttribute("x1", "0");
-hour_hand.setAttribute("y1", "0");
-hour_hand.setAttribute("x2", "0");
-hour_hand.setAttribute("y2", (-1 * hour_hand_length) .toString ());
-hour_hand.setAttribute("style", "stroke:blue; stroke-width:5%;stroke-linecap:round");
-hour_hand.setAttribute("transform", "rotate(" + (((new Date()).getHours() % 12) * 30 + (new Date()).getMinutes() /2) +  ")");
-svg.appendChild(hour_hand);
+function startAnimation() {
+  if (!timerFunction) timerFunction = setInterval(swing, dx * 100);
+}
+function stopAnimation() {
+  if (timerFunction != null) {
+    clearInterval(timerFunction);
+    timerFunction = null;
+  }
+}
 
-// minute hand
-const minute_hand = document.createElementNS("http://www.w3.org/2000/svg", "line");
-minute_hand.setAttribute("x1", "0");
-minute_hand.setAttribute("y1", "0");
-minute_hand.setAttribute("x2", "0");
-minute_hand.setAttribute("y2", (-1 * minute_hand_length) .toString ());
-minute_hand.setAttribute("style", "stroke:red; stroke-width:3%;stroke-linecap:round");
-minute_hand.setAttribute("transform", "rotate(" + ((new Date()).getMinutes()*6) +  ")");
-svg.appendChild(minute_hand);
+function setPenPos() {
+  penx = cx + radius * Math.cos(angle);
+  peny = cy + radius * Math.sin(angle);
+  scene.getElementById("string").setAttribute("x2", penx);
+  scene.getElementById("string").setAttribute("y2", peny);
+  scene.getElementById("ball").setAttribute("cx", penx);
+  scene.getElementById("ball").setAttribute("cy", peny);
+}
 
-// second hand
-const sec_hand = document.createElementNS("http://www.w3.org/2000/svg", "line");
-sec_hand.setAttribute("x1", "0");
-sec_hand.setAttribute("y1", "0");
-sec_hand.setAttribute("x2", "0");
-sec_hand.setAttribute("y2", (-1 * sec_hand_length) .toString ());
-sec_hand.setAttribute("style", "stroke:black; stroke-width:1%;stroke-linecap:round");
-sec_hand.setAttribute("transform", "rotate(" + ((new Date()).getSeconds()*6) +  ")");
-svg.appendChild(sec_hand);
+function swing() {
+  acc = g * Math.cos(angle);
+  vel += acc * dx; //Convert m/s/s to m/s
+  angle += (vel / (radius / 100)) * dx; //convert m/s into rad/s and then into rad
+  setPenPos();
+}
 
-const f_update_clock = (() => {
-  const dd = new Date();
-  sec_hand.setAttribute("transform", "rotate(" + (dd.getSeconds()*6) +  ")");
-  minute_hand.setAttribute("transform", "rotate(" + (dd.getMinutes()*6) +  ")");
-  hour_hand.setAttribute("transform", "rotate(" + ((dd.getHours() % 12) * 30 + dd.getMinutes() /2) +  ")");
-});
-
-setInterval( f_update_clock , 1000);
+function circle_click(evt) {
+  console.log(stopflag);
+  if (stopflag == 1) {
+    stopAnimation();
+    console.log("stop");
+    stopflag = 0;
+  } else if (stopflag == 0) {
+    startAnimation();
+    console.log("start");
+    stopflag = 1;
+  }
+}
